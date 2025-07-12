@@ -1,0 +1,1723 @@
+{
+  "validation_stats": {
+    "total": 96,
+    "correct": 73,
+    "incorrect": 23,
+    "accuracy": 0.7604166666666666,
+    "pattern_stats": {
+      "AHP": {
+        "total": 10,
+        "correct": 9,
+        "accuracy": 0.9
+      },
+      "NSIP": {
+        "total": 14,
+        "correct": 10,
+        "accuracy": 0.7142857142857143
+      },
+      "OP": {
+        "total": 49,
+        "correct": 48,
+        "accuracy": 0.9795918367346939
+      },
+      "UIP": {
+        "total": 23,
+        "correct": 6,
+        "accuracy": 0.2608695652173913
+      }
+    },
+    "error_details": [
+      {
+        "filename": "AHP 8",
+        "actual": "AHP",
+        "predicted": "OP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "overall_axial_distribution": "diffuse_scattered",
+          "overall_manifestation": "ggo_consolidation_mixed"
+        }
+      },
+      {
+        "filename": "NSIP 12",
+        "actual": "NSIP",
+        "predicted": "HP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "diffuse_scattered",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "NSIP 19",
+        "actual": "NSIP",
+        "predicted": "UIP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "NSIP 3",
+        "actual": "NSIP",
+        "predicted": "UIP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "NSIP 8",
+        "actual": "NSIP",
+        "predicted": "UIP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "OP 50",
+        "actual": "OP",
+        "predicted": "HP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "overall_axial_distribution": "diffuse_scattered",
+          "overall_manifestation": "ggo_consolidation_mixed"
+        }
+      },
+      {
+        "filename": "UIP 10",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 11",
+        "actual": "UIP",
+        "predicted": "NSIP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural_omitted"
+        }
+      },
+      {
+        "filename": "UIP 12",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 13",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 14",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 15",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 17",
+        "actual": "UIP",
+        "predicted": "NSIP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural_omitted"
+        }
+      },
+      {
+        "filename": "UIP 18",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 19",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 20",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 22",
+        "actual": "UIP",
+        "predicted": "NSIP",
+        "features": {
+          "abnormal_manifestation_presence": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural_omitted"
+        }
+      },
+      {
+        "filename": "UIP 23",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 3",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 5",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 6",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 7",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      },
+      {
+        "filename": "UIP 9",
+        "actual": "UIP",
+        "predicted": "不可分类",
+        "features": {
+          "abnormal_manifestation_presence": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "overall_axial_distribution": "peripheral",
+          "overall_manifestation": "subpleural"
+        }
+      }
+    ]
+  },
+  "detailed_results": [
+    {
+      "filename": "AHP 1",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 10",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 11",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "central",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 2",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 3",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 5",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 6",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 8",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "OP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 9",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "AHP 4",
+      "actual_pattern": "AHP",
+      "predicted_pattern": "HP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "NSIP 1",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 10",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 11",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 12",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "HP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "NSIP 15",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 16",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 17",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 18",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 19",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "UIP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "NSIP 3",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "UIP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "NSIP 4",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 5",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 7",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "NSIP 8",
+      "actual_pattern": "NSIP",
+      "predicted_pattern": "UIP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "OP 1",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 10",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 11",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 12",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 13",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 14",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 15",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 16",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 17",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 18",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 19",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 2",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 20",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 21",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 22",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 23",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 24",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 25",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 26",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 27",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 28",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 29",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 3",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 30",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 31",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 32",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 33",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 34",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 35",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 36",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 37",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 38",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 39",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 4",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 40",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 41",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 42",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "central",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 43",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 44",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 45",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 47",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 48",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 49",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 5",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 50",
+      "actual_pattern": "OP",
+      "predicted_pattern": "HP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 6",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 7",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 8",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "OP 9",
+      "actual_pattern": "OP",
+      "predicted_pattern": "OP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "overall_axial_distribution": "diffuse_scattered",
+      "overall_manifestation": "ggo_consolidation_mixed"
+    },
+    {
+      "filename": "UIP 1",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "UIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 10",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 11",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "UIP 12",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 13",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 14",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 15",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 16",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "UIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 17",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "UIP 18",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 19",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 2",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "UIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 20",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 21",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "UIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 22",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "NSIP",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural_omitted"
+    },
+    {
+      "filename": "UIP 23",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 3",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 4",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "UIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 5",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 6",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 7",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 8",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "UIP",
+      "is_correct": true,
+      "abnormal_manifestation_presence": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    },
+    {
+      "filename": "UIP 9",
+      "actual_pattern": "UIP",
+      "predicted_pattern": "不可分类",
+      "is_correct": false,
+      "abnormal_manifestation_presence": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "overall_axial_distribution": "peripheral",
+      "overall_manifestation": "subpleural"
+    }
+  ]
+}
