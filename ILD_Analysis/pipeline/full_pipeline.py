@@ -12,7 +12,8 @@ from datetime import datetime
 
 # Import all components
 from ..core.data_loader import ILDDataLoader
-from ..core.lung_segmentation import LungSegmentator
+from ..core.lung_segmentation_legacy import LungSegmentator as LegacyLungSegmentator
+from ..core.lungmask_segmentation import LungmaskSegmentator
 from ..features.lesion_type import LesionTypeExtractor
 from ..features.lung_distribution import LungDistributionCalculator
 from ..features.axial_distribution import AxialDistributionCalculator
@@ -25,7 +26,9 @@ logger = logging.getLogger(__name__)
 class ILDAnalysisPipeline:
     """Complete ILD analysis pipeline"""
     
-    def __init__(self, ct_dir: str = None, lesion_dir: str = None, output_dir: str = None):
+    def __init__(self, ct_dir: str = None, lesion_dir: str = None, 
+                 output_dir: str = None, lung_mask_dir: str = None,
+                 use_precomputed_masks: bool = True):
         """
         Initialize ILD Analysis Pipeline
         
@@ -33,15 +36,37 @@ class ILDAnalysisPipeline:
             ct_dir: Directory containing CT images (default from config)
             lesion_dir: Directory containing lesion predictions (default from config)
             output_dir: Directory for output results (default from config)
+            lung_mask_dir: Directory containing precomputed lung masks (default: dataset/lungs)
+            use_precomputed_masks: Whether to use precomputed masks when available
         """
         # Set directories
         self.ct_dir = ct_dir or Config.CT_IMAGES_DIR
         self.lesion_dir = lesion_dir or Config.PREDICTED_LABELS_DIR
         self.output_dir = output_dir or Config.OUTPUT_DIR
         
+        # Set lung mask directory (default to dataset/lungs)
+        if lung_mask_dir is None:
+            # Assume lung masks are in dataset/lungs relative to ct_dir
+            dataset_dir = os.path.dirname(self.ct_dir)
+            self.lung_mask_dir = os.path.join(dataset_dir, 'lungs')
+        else:
+            self.lung_mask_dir = lung_mask_dir
+            
+        self.use_precomputed_masks = use_precomputed_masks
+        
         # Initialize components
-        self.data_loader = ILDDataLoader(self.ct_dir, self.lesion_dir)
-        self.lung_segmentator = LungSegmentator(threshold=Config.LUNG_THRESHOLD)
+        self.data_loader = ILDDataLoader(self.ct_dir, self.lesion_dir, self.lung_mask_dir)
+        
+        # Initialize lung segmentator (try lungmask first, fallback to legacy)
+        try:
+            self.lung_segmentator = LungmaskSegmentator(enable_lobe_segmentation=False)
+            self.segmentation_method = "lungmask"
+            logger.info("Using lungmask-based segmentation (percentile-based upper/lower division)")
+        except Exception as e:
+            logger.warning(f"Failed to initialize lungmask: {str(e)}")
+            logger.info("Falling back to legacy morphological segmentation")
+            self.lung_segmentator = LegacyLungSegmentator(threshold=Config.LUNG_THRESHOLD)
+            self.segmentation_method = "legacy"
         self.lesion_extractor = LesionTypeExtractor(Config.LESION_LABELS)
         self.lung_distribution_calc = LungDistributionCalculator(Config.UPPER_LOWER_PERCENTILE)
         self.axial_distribution_calc = AxialDistributionCalculator(
@@ -76,8 +101,8 @@ class ILDAnalysisPipeline:
         try:
             logger.info(f"Processing case: {case_name}")
             
-            # Step 1: Load data
-            ct_array, lesion_array, spacing, ct_sitk = self.data_loader.load_case(case_name)
+            # Step 1: Load data (with potential precomputed lung masks)
+            ct_array, lesion_array, spacing, ct_sitk, precomputed_masks = self.data_loader.load_case_with_lung_masks(case_name)
             
             if ct_array is None:
                 result["error"] = "Failed to load case data"
@@ -86,12 +111,36 @@ class ILDAnalysisPipeline:
             result["data_info"] = {
                 "ct_shape": ct_array.shape,
                 "lesion_shape": lesion_array.shape,
-                "spacing": spacing
+                "spacing": spacing,
+                "precomputed_masks_available": any(mask is not None for mask in precomputed_masks.values()),
+                "segmentation_method": self.segmentation_method
             }
             
-            # Step 2: Lung segmentation
-            logger.info(f"Performing lung segmentation for {case_name}")
-            lung_mask = self.lung_segmentator.segment_volume(ct_array, spacing)
+            # Step 2: Lung segmentation (use precomputed if available)
+            logger.info(f"Obtaining lung segmentation for {case_name}")
+            
+            if (self.use_precomputed_masks and 
+                precomputed_masks.get('lung_mask') is not None):
+                # Use precomputed lung mask
+                lung_mask = precomputed_masks['lung_mask']
+                upper_lung = precomputed_masks.get('upper_lung')
+                lower_lung = precomputed_masks.get('lower_lung')
+                
+                logger.info(f"Using precomputed lung masks for {case_name}")
+                result["data_info"]["lung_segmentation_source"] = "precomputed"
+                
+            else:
+                # Compute lung segmentation in real-time
+                logger.info(f"Computing lung segmentation in real-time for {case_name}")
+                lung_mask = self.lung_segmentator.segment_volume(ct_array, spacing)
+                
+                # Get upper/lower division
+                if hasattr(self.lung_segmentator, 'divide_upper_lower_lung'):
+                    upper_lung, lower_lung, _ = self.lung_segmentator.divide_upper_lower_lung(lung_mask)
+                else:
+                    upper_lung = lower_lung = None
+                
+                result["data_info"]["lung_segmentation_source"] = "real_time"
             
             if not np.any(lung_mask):
                 result["error"] = "Failed to segment lungs"
@@ -110,9 +159,17 @@ class ILDAnalysisPipeline:
             )
             
             # Variable 2: Lung distribution (upper/lower)
-            lung_distribution = self.lung_distribution_calc.calculate_lung_distribution(
-                lesion_array, lung_mask, spacing
-            )
+            if upper_lung is not None and lower_lung is not None:
+                # Use precomputed upper/lower lung masks for more accurate distribution
+                lung_distribution = self._calculate_lung_distribution_with_masks(
+                    lesion_array, lung_mask, upper_lung, lower_lung, spacing
+                )
+            else:
+                # Fallback to standard calculation
+                lung_distribution = self.lung_distribution_calc.calculate_lung_distribution(
+                    lesion_array, lung_mask, spacing
+                )
+            
             lung_dist_summary = self.lung_distribution_calc.get_distribution_summary(
                 lung_distribution
             )
@@ -478,3 +535,112 @@ class ILDAnalysisPipeline:
             validation["issues"].append(f"Validation error: {str(e)}")
         
         return validation
+    
+    def _calculate_lung_distribution_with_masks(self, lesion_mask: np.ndarray, 
+                                              lung_mask: np.ndarray,
+                                              upper_lung: np.ndarray, 
+                                              lower_lung: np.ndarray,
+                                              spacing: Tuple[float, float, float]) -> Dict[str, Any]:
+        """
+        Calculate lung distribution using precomputed upper/lower lung masks
+        
+        Args:
+            lesion_mask: 3D lesion segmentation mask  
+            lung_mask: 3D lung mask
+            upper_lung: 3D upper lung mask
+            lower_lung: 3D lower lung mask
+            spacing: Pixel spacing (z, y, x)
+            
+        Returns:
+            Dictionary with lung distribution analysis
+        """
+        results = {
+            "upper_lung_volume": 0.0,
+            "lower_lung_volume": 0.0,
+            "total_lung_volume": 0.0,
+            "upper_lesion_volume": 0.0,
+            "lower_lesion_volume": 0.0,
+            "total_lesion_volume": 0.0,
+            "upper_lesion_ratio": 0.0,
+            "lower_lesion_ratio": 0.0,
+            "upper_lesion_proportion": 0.0,
+            "lower_lesion_proportion": 0.0,
+            "distribution_pattern": "unknown",
+            "z_cut_position": None,
+            "upper_lung_voxels": 0,
+            "lower_lung_voxels": 0,
+            "upper_lesion_voxels": 0,
+            "lower_lesion_voxels": 0
+        }
+        
+        try:
+            if spacing is None:
+                spacing = (1.0, 1.0, 1.0)
+            
+            voxel_volume = spacing[0] * spacing[1] * spacing[2]
+            
+            # Calculate lung volumes
+            upper_lung_voxels = np.sum(upper_lung > 0)
+            lower_lung_voxels = np.sum(lower_lung > 0)
+            total_lung_voxels = np.sum(lung_mask > 0)
+            
+            results["upper_lung_voxels"] = int(upper_lung_voxels)
+            results["lower_lung_voxels"] = int(lower_lung_voxels)
+            results["upper_lung_volume"] = upper_lung_voxels * voxel_volume
+            results["lower_lung_volume"] = lower_lung_voxels * voxel_volume
+            results["total_lung_volume"] = total_lung_voxels * voxel_volume
+            
+            # Calculate lesion volumes in each region
+            upper_lesions = lesion_mask & upper_lung
+            lower_lesions = lesion_mask & lower_lung
+            total_lesions = lesion_mask & lung_mask
+            
+            upper_lesion_voxels = np.sum(upper_lesions > 0)
+            lower_lesion_voxels = np.sum(lower_lesions > 0)
+            total_lesion_voxels = np.sum(total_lesions > 0)
+            
+            results["upper_lesion_voxels"] = int(upper_lesion_voxels)
+            results["lower_lesion_voxels"] = int(lower_lesion_voxels)
+            results["upper_lesion_volume"] = upper_lesion_voxels * voxel_volume
+            results["lower_lesion_volume"] = lower_lesion_voxels * voxel_volume
+            results["total_lesion_volume"] = total_lesion_voxels * voxel_volume
+            
+            # Calculate ratios and proportions
+            if upper_lung_voxels > 0:
+                results["upper_lesion_ratio"] = upper_lesion_voxels / upper_lung_voxels
+            
+            if lower_lung_voxels > 0:
+                results["lower_lesion_ratio"] = lower_lesion_voxels / lower_lung_voxels
+            
+            if total_lesion_voxels > 0:
+                results["upper_lesion_proportion"] = upper_lesion_voxels / total_lesion_voxels
+                results["lower_lesion_proportion"] = lower_lesion_voxels / total_lesion_voxels
+            
+            # Determine distribution pattern
+            upper_prop = results["upper_lesion_proportion"]
+            lower_prop = results["lower_lesion_proportion"]
+            
+            if upper_prop > 0.70:
+                results["distribution_pattern"] = "upper_predominant"
+            elif lower_prop > 0.70:
+                results["distribution_pattern"] = "lower_predominant"
+            elif abs(upper_prop - lower_prop) <= 0.20:
+                results["distribution_pattern"] = "diffuse"
+            else:
+                results["distribution_pattern"] = "mixed"
+            
+            # Estimate z_cut position (approximate)
+            upper_z = np.where(upper_lung)[0]
+            lower_z = np.where(lower_lung)[0]
+            
+            if len(upper_z) > 0 and len(lower_z) > 0:
+                results["z_cut_position"] = int(np.mean([np.min(upper_z), np.max(lower_z)]))
+            
+            logger.debug(f"Calculated lung distribution with precomputed masks: "
+                        f"{results['distribution_pattern']} "
+                        f"(upper: {upper_prop:.3f}, lower: {lower_prop:.3f})")
+            
+        except Exception as e:
+            logger.error(f"Error calculating lung distribution with precomputed masks: {str(e)}")
+            
+        return results
