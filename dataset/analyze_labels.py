@@ -2,25 +2,33 @@
 # -*- coding: utf-8 -*-
 """
 标签文件分析程序
-读取labels文件夹下的nii.gz文件，统计每个slice中不同标签的出现次数
+以slice为单位统计每个患者的病变标签，以患者为单位存储存在病变的roi_layer和每张slice的病变标签
 """
 
 import os
 import numpy as np
 import nibabel as nib
+import json
 from collections import defaultdict
-import pandas as pd
 from pathlib import Path
 
-def analyze_nii_labels(labels_dir):
+def analyze_patient_labels(labels_dir):
     """
-    分析labels文件夹中所有nii.gz文件的标签分布
+    以患者为单位分析labels文件夹中所有nii.gz文件的病变标签分布
     
     Args:
         labels_dir (str): labels文件夹路径
     
     Returns:
-        dict: 包含每个文件每个slice标签统计的字典
+        dict: 包含每个患者病变信息的字典，格式为:
+        {
+            "patient_id": {
+                "roi_layers_with_lesions": [list of slice indices with lesions],
+                "slice_lesion_labels": {
+                    "slice_xxx": [list of lesion labels in this slice]
+                }
+            }
+        }
     """
     labels_path = Path(labels_dir)
     
@@ -37,7 +45,7 @@ def analyze_nii_labels(labels_dir):
     
     print(f"找到 {len(nii_files)} 个nii.gz文件")
     
-    results = {}
+    patient_results = {}
     
     for nii_file in nii_files:
         print(f"\n处理文件: {nii_file.name}")
@@ -49,9 +57,14 @@ def analyze_nii_labels(labels_dir):
             
             print(f"  文件形状: {data.shape}")
             
-            # 获取文件名（不含扩展名）
-            file_key = nii_file.stem.replace('.nii', '')
-            results[file_key] = {}
+            # 获取患者ID（文件名不含扩展名）
+            patient_id = nii_file.stem.replace('.nii', '')
+            
+            # 初始化患者数据结构
+            patient_results[patient_id] = {
+                "roi_layers_with_lesions": [],
+                "slice_lesion_labels": {}
+            }
             
             # 遍历每个slice（假设第三个维度是slice）
             if len(data.shape) == 3:
@@ -60,40 +73,27 @@ def analyze_nii_labels(labels_dir):
                 for slice_idx in range(num_slices):
                     slice_data = data[:, :, slice_idx]
                     
-                    # 统计每个标签的出现次数
-                    unique_labels, counts = np.unique(slice_data, return_counts=True)
+                    # 获取该slice中的所有非零标签（病变标签）
+                    unique_labels = np.unique(slice_data)
+                    lesion_labels = [int(label) for label in unique_labels if label != 0]
                     
-                    # 完全去除标签值为0的统计
-                    non_zero_mask = unique_labels != 0
-                    unique_labels = unique_labels[non_zero_mask]
-                    counts = counts[non_zero_mask]
-                    
-                    # 存储结果
-                    slice_stats = {}
-                    for label, count in zip(unique_labels, counts):
-                        slice_stats[int(label)] = int(count)
-                    
-                    results[file_key][f'slice_{slice_idx:03d}'] = slice_stats
-                    
-                    # 打印非空slice的统计信息
-                    if slice_stats:
-                        print(f"    Slice {slice_idx:03d}: {slice_stats}")
+                    # 如果该slice存在病变标签
+                    if lesion_labels:
+                        slice_name = f'slice_{slice_idx:03d}'
+                        patient_results[patient_id]["roi_layers_with_lesions"].append(slice_idx)
+                        patient_results[patient_id]["slice_lesion_labels"][slice_name] = lesion_labels
+                        
+                        print(f"    Slice {slice_idx:03d}: 病变标签 {lesion_labels}")
             
             elif len(data.shape) == 2:
                 # 2D图像，只有一个slice
-                unique_labels, counts = np.unique(data, return_counts=True)
+                unique_labels = np.unique(data)
+                lesion_labels = [int(label) for label in unique_labels if label != 0]
                 
-                # 完全去除标签值为0的统计
-                non_zero_mask = unique_labels != 0
-                unique_labels = unique_labels[non_zero_mask]
-                counts = counts[non_zero_mask]
-                
-                slice_stats = {}
-                for label, count in zip(unique_labels, counts):
-                    slice_stats[int(label)] = int(count)
-                
-                results[file_key]['slice_000'] = slice_stats
-                print(f"    单个slice: {slice_stats}")
+                if lesion_labels:
+                    patient_results[patient_id]["roi_layers_with_lesions"].append(0)
+                    patient_results[patient_id]["slice_lesion_labels"]["slice_000"] = lesion_labels
+                    print(f"    单个slice: 病变标签 {lesion_labels}")
             
             else:
                 print(f"  警告: 不支持的数据维度 {data.shape}")
@@ -102,31 +102,19 @@ def analyze_nii_labels(labels_dir):
             print(f"  错误: 处理文件 {nii_file.name} 时出错: {str(e)}")
             continue
     
-    return results
+    return patient_results
 
-def save_results_to_csv(results, output_file):
+def save_results_to_json(results, output_file):
     """
-    将结果保存为CSV文件
+    将结果保存为JSON文件
     
     Args:
         results (dict): 分析结果
         output_file (str): 输出文件路径
     """
-    rows = []
-    
-    for file_name, file_data in results.items():
-        for slice_name, slice_data in file_data.items():
-            for label, count in slice_data.items():
-                rows.append({
-                    'file_name': file_name,
-                    'slice': slice_name,
-                    'label': label,
-                    'count': count
-                })
-    
-    if rows:
-        df = pd.DataFrame(rows)
-        df.to_csv(output_file, index=False, encoding='utf-8')
+    if results:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
         print(f"\n结果已保存到: {output_file}")
     else:
         print("\n没有数据可保存")
@@ -140,37 +128,42 @@ def print_summary(results):
     """
     print("\n=== 统计摘要 ===")
     
-    total_files = len(results)
-    total_slices = sum(len(file_data) for file_data in results.values())
+    total_patients = len(results)
+    total_slices_with_lesions = sum(len(patient_data["roi_layers_with_lesions"]) for patient_data in results.values())
     
-    # 统计所有出现的标签
+    # 统计所有出现的病变标签
     all_labels = set()
-    for file_data in results.values():
-        for slice_data in file_data.values():
-            all_labels.update(slice_data.keys())
+    for patient_data in results.values():
+        for slice_labels in patient_data["slice_lesion_labels"].values():
+            all_labels.update(slice_labels)
     
-    print(f"处理的文件数: {total_files}")
-    print(f"总slice数: {total_slices}")
-    print(f"发现的标签: {sorted(all_labels)}")
+    print(f"处理的患者数: {total_patients}")
+    print(f"存在病变的slice总数: {total_slices_with_lesions}")
+    print(f"发现的病变标签: {sorted(all_labels)}")
     
-    # 每个标签的总计数和文件分布
-    label_totals = defaultdict(int)
-    label_files = defaultdict(set)
+    # 每个标签出现的患者数和slice数
+    label_patients = defaultdict(set)
+    label_slice_count = defaultdict(int)
     
-    for file_name, file_data in results.items():
-        for slice_data in file_data.values():
-            for label, count in slice_data.items():
-                label_totals[label] += count
-                label_files[label].add(file_name)
+    for patient_id, patient_data in results.items():
+        for slice_labels in patient_data["slice_lesion_labels"].values():
+            for label in slice_labels:
+                label_patients[label].add(patient_id)
+                label_slice_count[label] += 1
     
-    print("\n各标签总计数:")
-    for label in sorted(label_totals.keys()):
-        print(f"  标签 {label}: {label_totals[label]}")
+    print("\n各病变标签统计:")
+    for label in sorted(all_labels):
+        patient_count = len(label_patients[label])
+        slice_count = label_slice_count[label]
+        print(f"  标签 {label}: 出现在 {patient_count} 个患者的 {slice_count} 个slice中")
     
-    print("\n各标签出现的文件:")
-    for label in sorted(label_files.keys()):
-        files_list = sorted(list(label_files[label]))
-        print(f"  标签 {label}: {files_list}")
+    print("\n各患者病变分布:")
+    for patient_id, patient_data in results.items():
+        lesion_slices = len(patient_data["roi_layers_with_lesions"])
+        all_patient_labels = set()
+        for slice_labels in patient_data["slice_lesion_labels"].values():
+            all_patient_labels.update(slice_labels)
+        print(f"  患者 {patient_id}: {lesion_slices} 个病变slice，病变标签: {sorted(all_patient_labels)}")
 
 def main():
     """
@@ -179,20 +172,20 @@ def main():
     # 设置路径
     current_dir = Path(__file__).parent
     labels_dir = current_dir / 'labels'
-    output_file = current_dir / 'label_statistics.csv'
+    output_file = current_dir / 'patient_lesion_analysis.json'
     
-    print("开始分析nii.gz文件中的标签分布...")
+    print("开始分析患者病变标签分布...")
     print(f"标签文件夹: {labels_dir}")
     
     # 分析标签文件
-    results = analyze_nii_labels(str(labels_dir))
+    results = analyze_patient_labels(str(labels_dir))
     
     if results:
         # 打印摘要
         print_summary(results)
         
         # 保存结果
-        save_results_to_csv(results, str(output_file))
+        save_results_to_json(results, str(output_file))
         
         print("\n分析完成!")
     else:
