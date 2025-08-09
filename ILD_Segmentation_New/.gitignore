@@ -12,6 +12,7 @@
 data/
 work_dir/
 checkpoints/
+workspace/
 segs/
 visualize/
 infer_eval/

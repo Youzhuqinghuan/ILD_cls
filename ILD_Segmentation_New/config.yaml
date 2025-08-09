@@ -60,6 +60,30 @@ preprocessing:
     test_ratio: 0.1
     stratified: true  # 基于疾病类型分层
   
+  # 背景切片处理
+  background_slices:
+    enabled: true
+    # 各数据集中背景切片的比例
+    ratios:
+      train: 0.3  # 训练集中30%为背景切片
+      val: 0.2    # 验证集中20%为背景切片
+      test: 0.2   # 测试集中20%为背景切片
+    # 解剖位置分层采样
+    anatomical_sampling:
+      enabled: true
+      # 按CT切片位置分层（上、中、下肺野）
+      position_groups: 3
+      # 每个位置组的最小切片数
+      min_slices_per_group: 5
+    # 背景切片选择策略
+    selection_strategy:
+      # 排除边缘切片（避免肺外区域）
+      exclude_edge_ratio: 0.1  # 排除前后10%的切片
+      # 优先选择肺组织丰富的切片
+      prefer_lung_rich: true
+      # 最小肺组织面积阈值
+      min_lung_area: 1000  # 像素数
+  
 
   
   # CT图像处理
@@ -115,21 +139,31 @@ training:
   
   # 训练参数
   params:
-    epochs: 500
+    epochs: 10
     batch_size: 16
-    learning_rate: 1e-5
+    learning_rate: 5e-5
     weight_decay: 1e-4
+  
+  # 学习率调度器
+  scheduler:
+    type: "cosine_annealing"  # 余弦退火
+    warmup_ratio: 0.1         # warmup占总训练步数的比例
+    min_lr_ratio: 0.01        # 最小学习率与初始学习率的比例
+    warmup_type: "linear"     # warmup类型：linear
   
   # 数据加载
   dataloader:
     num_workers: 4
     pin_memory: true
     shuffle: true
+    bbox_shift: 20  # 边界框随机扰动像素数
   
   # 损失函数
   loss:
     dice_weight: 1.0
     ce_weight: 1.0
+    background_weight: 0.5  # 背景类别权重
+    lesion_weight: 1.0      # 病变类别权重
   
   # 保存配置
   checkpoint:
@@ -138,25 +172,77 @@ training:
     keep_best: true
 
 # ============================================================================
-# 推理配置（预留）
+# 推理配置
 # ============================================================================
 inference:
   # 模型配置
   model:
-    checkpoint: "./checkpoints/best_model.pth"
-    config_file: "sam2_hiera_t.yaml"
+    # 训练好的MedSAM2模型路径
+    model_path: "./workspace/best_model.pth"
+    # SAM2配置文件
+    config_path: "sam2_hiera_t.yaml"
+    # SAM2预训练模型路径
+    sam2_checkpoint: "./checkpoints/sam2_hiera_tiny.pt"
+  
+  # 数据配置
+  data:
+    # 输入数据根目录
+    data_root: "./data/test"
+    # 肺分割文件目录（可选）
+    lung_mask_dir: "./data/lungs"
+    # 输出结果目录
+    output_dir: "./results/inference"
   
   # 推理参数
   params:
+    # 计算设备
+    device: "cuda:0"
+    # 置信度阈值（低于此值认为是背景切片）
+    confidence_threshold: 0.3
+    # 边界框padding像素数
+    bbox_padding: 5
+    # 批处理大小
     batch_size: 1
-    output_size: [1024, 1024]
-    use_3d_propagation: true
+    # 最小病变区域大小（像素）
+    min_lesion_size: 10
+    # 最大连通组件数量
+    max_components: 5
   
   # 输出配置
   output:
-    save_dir: "./results"
-    save_format: "nii.gz"
+    # 是否保存可视化结果
     save_visualization: true
+    # 是否保存NIfTI格式结果
+    save_nifti: false
+    # 是否详细输出
+    verbose: true
+    # 结果文件格式
+    formats:
+      - "npz"  # numpy压缩格式
+      - "json" # JSON摘要格式
+  
+  # 病变类型映射
+  lesion_types:
+    0: "background"
+    1: "GGO"
+    2: "reticulation"
+    3: "consolidation"
+    4: "honeycombing"
+  
+  # 质量控制参数
+  quality_control:
+    # 最小置信度阈值
+    min_confidence: 0.1
+    # 最大假阳性率
+    max_false_positive_rate: 0.05
+    # 连通组件分析参数
+    connectivity: 2
+    # 形态学操作参数
+    morphology:
+      # 开运算核大小
+      opening_kernel_size: 3
+      # 闭运算核大小
+      closing_kernel_size: 5
 
 # ============================================================================
 # 系统配置

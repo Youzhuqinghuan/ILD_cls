@@ -737,15 +737,197 @@ class ILDDataPreprocessor:
                 json.dump(all_processed_metadata, f, ensure_ascii=False, indent=2)
             self.logger.info(f"切片元信息已保存到: {metadata_file}")
         
-        # 5. 生成统计报告
+        # 5. 处理背景切片（如果启用）
+        if self.preprocess_config.get('background_slices', {}).get('enabled', False):
+            self.logger.info("开始处理背景切片...")
+            background_metadata = self._process_background_slices(slice_splits, patient_cache)
+            all_processed_metadata.extend(background_metadata)
+            
+            # 重新保存包含背景切片的元数据
+            if self.preprocess_config['output']['save_slice_metadata']:
+                metadata_file = self.output_dir / 'slice_metadata.json'
+                with open(metadata_file, 'w', encoding='utf-8') as f:
+                    json.dump(all_processed_metadata, f, ensure_ascii=False, indent=2)
+                self.logger.info(f"更新后的切片元信息已保存到: {metadata_file}")
+        
+        # 6. 生成最终统计报告（包含背景切片）
         if self.preprocess_config['output']['save_statistics']:
             self._generate_statistics_report(all_processed_metadata)
         
         self.logger.info(f"数据预处理完成！共处理 {len(all_processed_metadata)} 个切片")
         self.logger.info(f"输出目录: {self.output_dir}")
     
-
+    def _identify_background_slices(self, patient_cache: Dict) -> Dict[str, List[Dict]]:
+        """识别背景切片并按解剖位置分组
+        
+        Args:
+            patient_cache: 缓存的患者数据
+            
+        Returns:
+            Dict[patient_id, List[slice_info]]: 按患者组织的背景切片信息
+        """
+        background_config = self.preprocess_config['background_slices']
+        selection_config = background_config['selection_strategy']
+        
+        # 加载病变分析数据
+        with open(self.splitter.lesion_analysis_file, 'r', encoding='utf-8') as f:
+            lesion_data = json.load(f)
+        
+        background_slices = defaultdict(list)
+        
+        for patient_id, cached_data in patient_cache.items():
+            patient_lesion_data = lesion_data.get(patient_id, {})
+            slice_lesion_labels = patient_lesion_data.get('slice_lesion_labels', {})
+            
+            ct_shape = cached_data['ct'].shape
+            total_slices = ct_shape[0]
+            
+            # 计算排除边缘切片的范围
+            exclude_ratio = selection_config['exclude_edge_ratio']
+            start_idx = int(total_slices * exclude_ratio)
+            end_idx = int(total_slices * (1 - exclude_ratio))
+            
+            # 遍历所有切片，找出背景切片
+            for slice_idx in range(start_idx, end_idx):
+                slice_name = f"slice_{slice_idx:03d}"
+                
+                # 检查是否已有病变标注
+                if slice_name in slice_lesion_labels:
+                    continue  # 跳过有病变的切片
+                
+                # 检查肺组织面积（如果有肺分割）
+                lung_area = 0
+                if cached_data['lung'] is not None and slice_idx < cached_data['lung'].shape[0]:
+                    lung_slice = cached_data['lung'][slice_idx]
+                    lung_area = np.sum(lung_slice > 0)
+                    
+                    if selection_config['prefer_lung_rich'] and lung_area < selection_config['min_lung_area']:
+                        continue  # 跳过肺组织面积过小的切片
+                
+                # 计算解剖位置组（上、中、下肺野）
+                position_groups = background_config['anatomical_sampling']['position_groups']
+                position_group = int((slice_idx - start_idx) / (end_idx - start_idx) * position_groups)
+                position_group = min(position_group, position_groups - 1)  # 确保不超出范围
+                
+                slice_info = {
+                    'slice_idx': slice_idx,
+                    'slice_name': slice_name,
+                    'position_group': position_group,
+                    'lung_area': lung_area
+                }
+                
+                background_slices[patient_id].append(slice_info)
+        
+        return dict(background_slices)
     
+    def _process_background_slices(self, slice_splits: Dict[str, List[str]], patient_cache: Dict) -> List[Dict]:
+        """处理背景切片并添加到各数据集
+        
+        Args:
+            slice_splits: 原始切片划分
+            patient_cache: 缓存的患者数据
+            
+        Returns:
+            List[Dict]: 处理后的背景切片元数据
+        """
+        background_config = self.preprocess_config['background_slices']
+        ratios = background_config['ratios']
+        
+        # 识别所有背景切片
+        background_slices = self._identify_background_slices(patient_cache)
+        
+        # 统计各数据集当前的切片数量
+        current_counts = {split: len(slices) for split, slices in slice_splits.items()}
+        
+        # 计算需要添加的背景切片数量
+        target_background_counts = {}
+        for split, ratio in ratios.items():
+            if split in current_counts:
+                # 根据比例计算目标背景切片数量
+                # 如果当前有N个病变切片，目标比例为R，则背景切片数量为 N * R / (1 - R)
+                lesion_count = current_counts[split]
+                target_background_count = int(lesion_count * ratio / (1 - ratio))
+                target_background_counts[split] = target_background_count
+        
+        self.logger.info(f"目标背景切片数量: {target_background_counts}")
+        
+        # 收集所有可用的背景切片
+        all_background_candidates = []
+        for patient_id, slices in background_slices.items():
+            for slice_info in slices:
+                slice_info['patient_id'] = patient_id
+                all_background_candidates.append(slice_info)
+        
+        self.logger.info(f"发现 {len(all_background_candidates)} 个候选背景切片")
+        
+        # 按解剖位置分组
+        if background_config['anatomical_sampling']['enabled']:
+            position_groups = defaultdict(list)
+            for candidate in all_background_candidates:
+                position_groups[candidate['position_group']].append(candidate)
+            
+            # 确保每个位置组有足够的切片
+            min_per_group = background_config['anatomical_sampling']['min_slices_per_group']
+            for group_id, group_slices in position_groups.items():
+                if len(group_slices) < min_per_group:
+                    self.logger.warning(f"位置组 {group_id} 只有 {len(group_slices)} 个切片，少于最小要求 {min_per_group}")
+        
+        # 为各数据集分配背景切片
+        processed_background_metadata = []
+        
+        for split_name, target_count in target_background_counts.items():
+            if target_count <= 0:
+                continue
+            
+            # 从候选切片中随机选择
+            np.random.seed(self.config['global']['seed'])
+            selected_candidates = np.random.choice(
+                all_background_candidates, 
+                size=min(target_count, len(all_background_candidates)), 
+                replace=False
+            )
+            
+            self.logger.info(f"为 {split_name} 数据集选择了 {len(selected_candidates)} 个背景切片")
+            
+            # 处理选中的背景切片
+            for candidate in selected_candidates:
+                patient_id = candidate['patient_id']
+                slice_idx = candidate['slice_idx']
+                slice_name = candidate['slice_name']
+                
+                if patient_id not in patient_cache:
+                    continue
+                
+                cached_data = patient_cache[patient_id]
+                
+                # 获取切片数据
+                ct_slice = cached_data['ct'][slice_idx]
+                # 创建全零标签（背景切片）
+                label_slice = np.zeros_like(ct_slice, dtype=np.uint8)
+                lung_slice = None
+                if cached_data['lung'] is not None and slice_idx < cached_data['lung'].shape[0]:
+                    lung_slice = cached_data['lung'][slice_idx]
+                
+                # 生成文件名并处理切片
+                slice_filename = f"{patient_id}_{slice_name}_bg"
+                result = self._process_slice_data(ct_slice, label_slice, lung_slice, slice_filename, split_name)
+                
+                if result['status'] == 'success':
+                    result['lesion_types'] = []  # 背景切片无病变类型
+                    result['primary_lesion'] = 0  # 背景
+                    result['has_lesion'] = False  # 无病变
+                    result['split'] = split_name
+                    result['patient_id'] = patient_id
+                    result['slice_name'] = slice_name
+                    result['is_background'] = True  # 标记为背景切片
+                    result['position_group'] = candidate['position_group']
+                    processed_background_metadata.append(result)
+                else:
+                    self.logger.warning(f"背景切片 {slice_filename} 处理失败: {result.get('message', '未知错误')}")
+        
+        self.logger.info(f"成功处理 {len(processed_background_metadata)} 个背景切片")
+        return processed_background_metadata
+
     def _generate_statistics_report(self, metadata: List[Dict]) -> None:
         """生成统计报告"""
         stats = {
@@ -786,6 +968,14 @@ class ILDDataPreprocessor:
                 stats['by_split'][split_name]['background_slices'] += 1
                 stats['by_patient'][patient_id]['background_slices'] += 1
             
+            # 区分原始背景切片和添加的背景切片
+            if item.get('is_background', False):
+                if 'added_background_slices' not in stats:
+                    stats['added_background_slices'] = 0
+                    stats['by_split_added_bg'] = defaultdict(int)
+                stats['added_background_slices'] += 1
+                stats['by_split_added_bg'][split_name] += 1
+            
             # 主要病变类型统计
             primary_lesion_name = item.get('primary_lesion_name', '背景')
             stats['primary_lesion_distribution'][primary_lesion_name] += 1
@@ -795,6 +985,8 @@ class ILDDataPreprocessor:
         stats['by_patient'] = dict(stats['by_patient'])
         stats['lesion_types'] = dict(stats['lesion_types'])
         stats['primary_lesion_distribution'] = dict(stats['primary_lesion_distribution'])
+        if 'by_split_added_bg' in stats:
+            stats['by_split_added_bg'] = dict(stats['by_split_added_bg'])
         
         # 保存统计报告
         stats_file = self.output_dir / 'preprocessing_statistics.json'

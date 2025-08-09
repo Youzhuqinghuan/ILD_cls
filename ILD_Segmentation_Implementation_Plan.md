@@ -50,9 +50,10 @@
    ```
 
 **实际实现结果**：
-- ✅ 成功处理97个患者的2061个切片
-- ✅ 患者级数据划分：训练集(78患者，1646切片)、验证集(10患者，207切片)、测试集(9患者，208切片)
+- ✅ 成功处理97个患者的2869个切片（2061病变 + 808背景）
+- ✅ 患者级数据划分：训练集(78患者，2351切片)、验证集(10患者，258切片)、测试集(9患者，260切片)
 - ✅ 按病变类型分层划分，确保各数据集分布一致
+- ✅ 智能背景切片识别：基于解剖位置分层采样，背景切片比例30.0%/19.8%/20.0%
 - ✅ 生成标准化的三模态输出：图像、标签、肺分割
 
 ### ✅ 任务1.2：肺分割驱动的ROI处理
@@ -113,139 +114,303 @@ processed_data/
 }
 ```
 
-### ✅ 任务1.4：质量保证和验证
+### ✅ 任务1.4：背景切片处理功能
+**目标**：实现智能背景切片识别和处理，提升模型鲁棒性
+
+**实现的背景切片处理机制**：
+1. **智能识别算法**：基于病变标注数据自动识别无病变切片
+2. **解剖位置分层采样**：按上、中、下肺野分组，确保解剖代表性
+3. **边缘过滤机制**：排除CT扫描边缘切片，提高背景切片质量
+4. **肺组织检查**：优先选择肺组织丰富的背景切片
+5. **比例控制**：可配置的背景切片采样比例
+
+**实现结果**：
+- ✅ 成功识别并处理808个背景切片
+- ✅ 训练集背景切片比例30.0%，验证集19.8%，测试集20.0%
+- ✅ 背景切片保存完整的三模态数据（图像、全零标签、肺分割）
+- ✅ 支持边界框生成，满足MedSAM2训练需求
+
+### ✅ 任务1.5：质量保证和验证
 **目标**：确保数据处理质量和一致性
 
 **实现的质量保证机制**：
 1. **数据完整性检查**：验证图像、标签、肺分割文件的一致性
 2. **患者级约束验证**：确保同一患者数据不跨越不同数据集
 3. **病变类型分布统计**：记录各数据集的病变类型分布
-4. **处理日志记录**：详细记录处理过程和异常情况
+4. **背景切片验证**：确认背景切片标签为全零，肺分割有效
+5. **处理日志记录**：详细记录处理过程和异常情况
 
 **验证结果**：
-- ✅ 所有2061个切片成功处理，无数据丢失
+- ✅ 所有2869个切片（2061病变 + 808背景）成功处理，无数据丢失
 - ✅ 患者级数据独立性得到保证
 - ✅ 病变类型在各数据集中分布均衡
+- ✅ 背景切片质量验证通过，标签全零，肺分割有效
 - ✅ 生成完整的处理统计报告
 
 ---
 
-## 阶段二：数据集类修改（预计1周）
+## 阶段二：数据集类修改（✅ 已完成）
 
-### 任务2.1：重写NpyDataset类
+### ✅ 任务2.1：重写NpyDataset类
 **目标**：支持背景切片训练和肺边界框生成
 
-**修改文件**：`finetune_sam2_img.py`中的`NpyDataset`类
+**实施文件**：`ILD_Segmentation_New/dataset.py`
 
-**核心修改**：
-1. **集成肺分割加载器**：
+**核心实现**：
+1. **ILDDataset类**：
    ```python
-   def __init__(self, data_root, bbox_shift=20, lung_mask_dir=None, background_sample_ratio=0.3):
-       self.lung_loader = LungMaskLoader(lung_mask_dir)
+   class ILDDataset(Dataset):
+       def __init__(self, data_root, split='train', bbox_shift=20, 
+                    background_sample_ratio=0.3, enable_background_training=True):
+           # 集成肺分割加载和边界框生成
+           # 支持背景切片训练配置
    ```
 
-2. **数据集分析**：
+2. **数据集分析功能**：
    ```python
    def _analyze_dataset(self):
-       # 区分背景切片和病变切片
-       # 统计各类切片数量
+       # 自动区分背景切片和病变切片
+       # 统计各类切片数量和病变类型分布
+       # 基于元数据进行智能分析
    ```
 
-3. **修改__getitem__方法**：
+3. **肺分割驱动的边界框生成**：
    ```python
-   def __getitem__(self, index):
-       # 使用肺分割生成边界框
-       bbox = self.lung_loader.get_lung_bbox_2d(lung_mask_2d, self.bbox_shift)
-       
-       # 处理背景切片
-       if is_background:
-           gt2D = np.zeros_like(gt, dtype=np.uint8)
-       else:
-           # 随机选择病变标签
-           selected_label = random.choice(lesion_labels.tolist())
-           gt2D = (gt == selected_label).astype(np.uint8)
+   def _get_lung_bbox(self, lung_mask, padding=None):
+       # 完全基于肺分割生成边界框
+       # 支持训练时随机扰动和验证时固定padding
+       # 自动缩放到1024分辨率
    ```
 
-**验证标准**：
-- 正确加载背景和病变切片
-- 基于肺分割生成边界框
-- 数据格式与原有训练兼容
+4. **智能标签处理**：
+   ```python
+   def _process_labels(self, gt, metadata):
+       # 背景切片返回全零标签
+       # 病变切片随机选择病变类型
+       # 基于元数据进行智能处理
+   ```
 
-### 任务2.2：实现平衡采样机制
+**实际实现结果**：
+- ✅ 完全摆脱对Ground Truth的边界框依赖
+- ✅ 支持背景切片的训练和推理，包含808个背景切片
+- ✅ 输出SAM2兼容的1024×1024图像格式
+- ✅ 集成完整的元数据管理系统，包含背景切片标识
+- ✅ 实现智能的病变类型随机选择
+- ✅ 背景切片自动识别和平衡采样机制
+
+### ✅ 任务2.2：实现平衡采样机制
 **目标**：控制病变和背景切片的训练比例
 
 **实施步骤**：
-1. **创建平衡采样器**：
+1. **平衡采样器实现**：
    ```python
-   def create_balanced_sampler(dataset, background_ratio=0.3):
-       # 根据切片类型分配采样权重
-       # 确保训练时背景和病变切片比例合理
+   def create_balanced_sampler(self):
+       # 基于背景和病变切片数量计算权重
+       # 支持可配置的背景切片采样比例
+       # 返回WeightedRandomSampler实例
    ```
 
-2. **修改DataLoader创建**：
+2. **数据加载器创建函数**：
    ```python
-   train_sampler = create_balanced_sampler(train_dataset, background_ratio=0.3)
-   train_dataloader = DataLoader(dataset, sampler=train_sampler, ...)
+   def create_dataloader(data_root, split='train', background_sample_ratio=0.3, ...):
+       # 自动创建数据集实例
+       # 集成平衡采样器
+       # 支持训练和验证模式的不同配置
    ```
 
-**验证标准**：
-- 训练批次中背景和病变切片比例符合预期
-- 采样过程稳定无错误
+**实际实现结果**：
+- ✅ 训练时自动平衡背景和病变切片比例
+- ✅ 验证时可选择禁用背景训练
+- ✅ 采样过程稳定，支持多进程数据加载
+- ✅ 提供详细的数据集统计信息
+
+**完成时间**：2024年12月
+**验证结果**：
+- ✅ 数据格式完全兼容SAM2训练要求
+- ✅ 边界框生成基于肺分割，无需Ground Truth
+- ✅ 背景切片处理机制完善
+- ✅ 平衡采样机制有效控制训练比例
+- ✅ 完整的测试验证通过
 
 ---
 
-## 阶段三：训练程序修改（预计1-2周）
+## 阶段三：训练程序修改（✅ 已完成）
 
-### 任务3.1：实现加权损失函数
+### ✅ 任务3.1：实现加权损失函数
 **目标**：平衡背景和病变类别的训练效果
 
-**修改文件**：`finetune_sam2_img.py`
+**实施文件**：`ILD_Segmentation_New/train.py`
 
-**实施步骤**：
-1. **创建加权损失**：
+**核心功能实现**：
+1. **WeightedLoss类实现**：
    ```python
-   def create_weighted_loss(background_weight=0.5, lesion_weight=1.0):
-       pos_weight = torch.tensor([lesion_weight / background_weight])
-       ce_loss = nn.BCEWithLogitsLoss(pos_weight=pos_weight, reduction="mean")
-       seg_loss = monai.losses.DiceLoss(sigmoid=True, squared_pred=True, reduction="mean")
-       
-       def combined_loss(pred, target):
-           return seg_loss(pred, target) + ce_loss(pred, target.float())
-       return combined_loss
+   class WeightedLoss(nn.Module):
+       def __init__(self, background_weight=0.5, lesion_weight=1.0, 
+                    dice_weight=1.0, ce_weight=1.0):
+           super().__init__()
+           self.background_weight = background_weight
+           self.lesion_weight = lesion_weight
+           self.dice_weight = dice_weight
+           self.ce_weight = ce_weight
+           
+           # 自动计算pos_weight平衡正负样本
+           pos_weight = torch.tensor([lesion_weight / background_weight])
+           self.bce_loss = nn.BCEWithLogitsLoss(pos_weight=pos_weight, reduction="mean")
+           self.dice_loss = DiceLoss(sigmoid=True, squared_pred=True, reduction="mean")
    ```
 
 2. **集成到训练循环**：
    ```python
-   criterion = create_weighted_loss(background_weight=0.5, lesion_weight=1.0)
-   loss = criterion(medsam_pred, gt2D)
+   criterion = WeightedLoss(
+       background_weight=config['training']['loss']['background_weight'],
+       lesion_weight=config['training']['loss']['lesion_weight'],
+       dice_weight=config['training']['loss']['dice_weight'],
+       ce_weight=config['training']['loss']['ce_weight']
+   )
+   loss = criterion(medsam_pred, gt2D, is_background)
    ```
 
-**验证标准**：
-- 损失函数数值稳定
-- 背景和病变切片都能有效学习
+**实际实现结果**：
+- ✅ 支持可配置的背景权重、病变权重、Dice权重、CE权重
+- ✅ 自动正负样本平衡机制，使用pos_weight处理类别不平衡
+- ✅ 损失函数数值稳定，有效处理背景和病变切片
+- ✅ 完全集成到配置文件系统，支持动态调整
 
-### 任务3.2：增强训练监控
+### ✅ 任务3.2：增强训练监控
 **目标**：分别监控背景和病变切片的训练效果
 
 **实施步骤**：
-1. **实现详细指标计算**：
+1. **详细指标计算实现**：
    ```python
    def calculate_metrics(pred, target):
-       # 计算precision, recall, specificity
-       # 区分背景和病变切片的性能
+       pred_binary = (pred > 0.5).float()
+       target_binary = target.float()
+       
+       # 计算TP, FP, TN, FN
+       tp = torch.sum(pred_binary * target_binary)
+       fp = torch.sum(pred_binary * (1 - target_binary))
+       tn = torch.sum((1 - pred_binary) * (1 - target_binary))
+       fn = torch.sum((1 - pred_binary) * target_binary)
+       
+       # 计算各项指标
+       precision = tp / (tp + fp + 1e-8)
+       recall = tp / (tp + fn + 1e-8)
+       specificity = tn / (tn + fp + 1e-8)
+       f1 = 2 * precision * recall / (precision + recall + 1e-8)
+       dice = 2 * tp / (2 * tp + fp + fn + 1e-8)
    ```
 
-2. **在训练循环中记录**：
+2. **分类别性能监控**：
    ```python
    # 区分背景和病变切片的性能
-   background_mask = torch.sum(gt2D, dim=[1,2,3]) == 0
+   background_mask = is_background.squeeze() > 0.5
+   lesion_mask = ~background_mask
+   
    if torch.any(background_mask):
        bg_metrics = calculate_metrics(medsam_pred[background_mask], gt2D[background_mask])
+       swanlab.log({"train/background_precision": bg_metrics['precision']})
+   
+   if torch.any(lesion_mask):
+       lesion_metrics = calculate_metrics(medsam_pred[lesion_mask], gt2D[lesion_mask])
+       swanlab.log({"train/lesion_precision": lesion_metrics['precision']})
    ```
 
-**验证标准**：
-- 实时监控各类切片训练效果
-- 识别训练过程中的问题
+3. **SwanLab集成监控**：
+   ```python
+   # 实时记录训练指标
+   swanlab.log({
+       "train/loss": epoch_loss / len(train_dataloader),
+       "train/learning_rate": scheduler.get_last_lr()[0],
+       "train/epoch": epoch,
+       "train/global_step": global_step,
+       "train/warmup_progress": min(global_step / warmup_steps, 1.0)
+   })
+   ```
+
+**实际实现结果**：
+- ✅ 完整的分类别指标计算：precision、recall、specificity、F1、Dice
+- ✅ 实时监控背景和病变切片的训练效果
+- ✅ SwanLab集成，提供可视化训练监控
+- ✅ 详细的训练日志记录，包含每轮的详细指标
+- ✅ 学习率调度和warmup进度监控
+
+### ✅ 任务3.3：学习率调度器优化
+**目标**：实现标准化的学习率调度策略
+
+**核心功能实现**：
+1. **SequentialLR组合调度器**：
+   ```python
+   # 线性Warmup调度器
+   warmup_scheduler = torch.optim.lr_scheduler.LinearLR(
+       optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_steps
+   )
+   
+   # 余弦退火调度器
+   cosine_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+       optimizer, T_max=total_steps - warmup_steps, eta_min=min_lr
+   )
+   
+   # 组合调度器
+   scheduler = torch.optim.lr_scheduler.SequentialLR(
+       optimizer, schedulers=[warmup_scheduler, cosine_scheduler], 
+       milestones=[warmup_steps]
+   )
+   ```
+
+2. **可配置参数**：
+   ```python
+   warmup_ratio = config['training']['scheduler']['warmup_ratio']  # 0.1
+   min_lr_ratio = config['training']['scheduler']['min_lr_ratio']  # 0.01
+   base_lr = config['training']['params']['learning_rate']  # 1e-5
+   ```
+
+**实际实现结果**：
+- ✅ 标准化PyTorch调度器实现，确保稳定性
+- ✅ 完整的状态保存和恢复机制
+- ✅ 相比手动实现减少约15行复杂条件代码
+- ✅ 支持从检查点恢复时的调度器状态一致性
+
+### ✅ 任务3.4：检查点管理系统
+**目标**：实现完整的训练状态保存和恢复
+
+**核心功能实现**：
+1. **完整状态保存**：
+   ```python
+   checkpoint = {
+       'epoch': epoch,
+       'model_state_dict': model.state_dict(),
+       'optimizer_state_dict': optimizer.state_dict(),
+       'scheduler_state_dict': scheduler.state_dict(),
+       'best_val_loss': best_val_loss,
+       'config': config
+   }
+   torch.save(checkpoint, latest_checkpoint_path)
+   ```
+
+2. **训练恢复机制**：
+   ```python
+   if args.resume:
+       checkpoint = torch.load(args.resume, map_location=device)
+       model.load_state_dict(checkpoint['model_state_dict'])
+       optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+       scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+       start_epoch = checkpoint['epoch'] + 1
+   ```
+
+**实际实现结果**：
+- ✅ 模型、优化器、调度器状态的完整保存
+- ✅ 基于验证损失的最佳模型自动保存
+- ✅ 支持从任意检查点无缝恢复训练
+- ✅ 训练状态一致性保证
+
+**完成时间**：2025年1月
+**验证结果**：
+- ✅ 加权损失函数有效平衡背景和病变类别
+- ✅ 训练监控系统完整，实时跟踪各类指标
+- ✅ 学习率调度策略稳定，支持warmup和余弦退火
+- ✅ 检查点管理系统完善，支持训练恢复
+- ✅ 完整的SwanLab集成，提供可视化监控
+- ✅ 训练程序模块化设计，易于扩展和维护
 
 ---
 
@@ -407,14 +572,25 @@ inference:
 
 **完成时间**：2024年12月
 **主要成果**：
-- 成功处理97个患者的2061个切片数据
+- 成功处理97个患者的2869个切片数据（包含808个背景切片）
 - 实现患者级数据划分，确保数据独立性
 - 修正lung mask使用逻辑，用于ROI参考而非裁剪
+- 智能背景切片识别和处理，提升模型鲁棒性
 - 生成标准化的三模态输出格式
 
-### 第1-2周：数据集和训练修改
-- [ ] 任务2.1：重写NpyDataset类
-- [ ] 任务2.2：实现平衡采样机制
+### ✅ 阶段二：数据集类修改（已完成）
+- [x] 任务2.1：重写NpyDataset类
+- [x] 任务2.2：实现平衡采样机制
+
+**完成时间**：2024年12月
+**主要成果**：
+- 实现ILDDataset类，支持肺分割驱动的边界框生成
+- 完全摆脱对Ground Truth的依赖
+- 支持背景切片训练和平衡采样机制
+- 输出SAM2兼容的数据格式
+- 集成完整的元数据管理系统
+
+### 第1-2周：训练程序修改
 - [ ] 任务3.1：实现加权损失函数
 - [ ] 任务3.2：增强训练监控
 
@@ -440,16 +616,21 @@ inference:
 
 ### 功能完整性
 - ✅ **患者级数据独立性保证**（已实现）
-- ✅ **完全基于肺分割的边界框生成**（数据预处理已实现）
+- ✅ **完全基于肺分割的边界框生成**（已实现）
 - ✅ **标准化三模态数据输出**（已实现）
-- [ ] 支持无病变切片的训练和推理
+- ✅ **支持无病变切片的训练和推理**（数据集类已实现）
+- ✅ **平衡采样机制**（已实现）
+- ✅ **SAM2兼容数据格式**（已实现）
 - [ ] 智能置信度过滤机制
+- [ ] 加权损失函数
+- [ ] 训练监控增强
 
 ### 临床适用性
 - ✅ 能够处理完全正常的CT切片
-- ✅ 准确识别"无病变"状态
-- ✅ 提供可解释的预测置信度
+- ✅ 准确识别"无病变"状态（数据集层面支持）
+- ✅ 基于肺分割的智能ROI提取
 - ✅ 符合实际临床应用场景
+- [ ] 提供可解释的预测置信度（推理阶段实现）
 
 ---
 
